@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        $(document).ready(function () {
+            var username = prompt("Enter your username:");
+            socket.emit('connect', { 'username': username });
+
+            socket.on('update_status', function (data) {
+                console.log(data);
+            });
+
+            $('form').submit(function () {
+                var content = $('#content').val();
+                var receiver = $('#receiver').val();
+                socket.emit('send_message', { 'content': content, 'sender': username, 'receiver': receiver });
+                $('#content').val('');
+                return false;
+            });
+
+            socket.on('receive_message', function (data) {
+                $('#messages').append('<li>' + data.sender + ' (' + data.timestamp + '): ' + data.content + '</li>');
+            });
+        });
+    </script>
+
+    <form>
+        <input id="content" autocomplete="off" /><br>
+        <input id="receiver" placeholder="Receiver" autocomplete="off" /><br>
+        <input type="submit" value="Send" />
+    </form>
+
+    <ul id="messages"></ul>
+</body>
+</html>
